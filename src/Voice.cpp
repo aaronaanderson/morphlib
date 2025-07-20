@@ -4,11 +4,11 @@
 
 using namespace morph;
 
-Voice::Voice( Synthesiser& synth )
-    : synthesiser( synth )
-{
+// Voice::Voice( Synthesiser& synth )
+//     : synthesiser( synth )
+// {
 
-}
+// }
 
 float Voice::getPressure() { return pressure; }
 
@@ -36,13 +36,10 @@ void Voice::setPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient)
     }
     auto semitones = getPitchBendToSemitones (currentPitchWheel);
     adjustedFrequency = tunedBaseFrequency * semitonesToScalar (semitones + globalPitchBendSemitones);
-
+    onPitchWheelChanged();
 }
 
-void Voice::setPitchBendRange (float rangeSemitones)
-{
-    pitchBendRange = rangeSemitones;
-}
+void Voice::setPitchBendRange (float rangeSemitones) { pitchBendRange = rangeSemitones; }
 
 void Voice::noteStarted()
 {
@@ -50,15 +47,9 @@ void Voice::noteStarted()
     onNoteStart();
 }
 
-void Voice::noteStopped (bool allowTailoff)
-{
-    onNoteStop (allowTailoff);
-}
+void Voice::noteStopped (bool allowTailoff) { onNoteStop (allowTailoff); }
 
-void Voice::notePitchbendChanged()
-{
-    onNotePitchbendChanged();
-}
+void Voice::notePitchbendChanged() { onNotePitchbendChanged(); }
 
 void Voice::notePressureChanged()
 {
@@ -72,7 +63,7 @@ void Voice::noteTimbreChanged()
     onNoteTimbreChanged();
 }
 
-void Voice::onNoteKeyStateChanged()
+void Voice::noteKeyStateChanged()
 {
     onNoteKeyStateChanged();
 }

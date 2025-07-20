@@ -11,7 +11,7 @@ public:
     float getAverageTimbre();
     void setGlobalPitchWheel (float pitchWheelNormalized);
     void panic();
-
+    
     virtual void prepareToPlay (double sr, int blockSize);
     virtual void allocate (int maxBlockSize);
     

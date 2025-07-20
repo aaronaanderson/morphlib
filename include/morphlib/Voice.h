@@ -12,17 +12,18 @@ class Synthesiser;
 class Voice : public juce::MPESynthesiserVoice 
 {
 public:
-    explicit Voice( Synthesiser& synthesiser );
+    //explicit Voice( Synthesiser& synthesiser );
     float getTimbre();
     float getPressure();
     void setGlobalPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient = nullptr);
     void setPitchBendRange (float rangeSemitones);
     void setPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient = nullptr);  // provide a client for non-standard tunings!
-    
+
     virtual void prepareToPlay (double sr, int blockSize) { juce::ignoreUnused (sr, blockSize); };
     virtual void resetAudio() {};
     virtual void allocate (int maxBlockSize) { juce::ignoreUnused (maxBlockSize); };
-    
+    virtual void setSampleRate (double sr) { juce::ignoreUnused (sr); };
+
     void setPitchWheelNormalized( float pitchWheelNormalized );
     
     virtual void onNoteStart() = 0;
@@ -31,8 +32,9 @@ public:
     virtual void onNotePressureChanged() = 0;
     virtual void onNoteTimbreChanged() = 0;
     virtual void onNoteKeyStateChanged() = 0;
+    virtual void onPitchWheelChanged() {};
     protected:
-    Synthesiser& synthesiser;
+    //Synthesiser& synthesiser;
     
     float pressure {0.0f};
     float timbre {0.0f};
