@@ -18,10 +18,24 @@ target_sources(morphlib
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/morphlib/Synthesiser.h>
 )
 
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON) #necessary for GCC linking
+add_library(MTS_ESP_MORPH STATIC ${CMAKE_CURRENT_SOURCE_DIR}/external/MTS-ESP/Client/libMTSClient.cpp)
+
 # Add include directories for users of the library
 target_include_directories(morphlib
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/>
+)
+
+
+# JUCE modules used in this lib
+target_link_libraries(morphlib
+    PRIVATE
+        juce::juce_audio_basics
+        juce::juce_dsp
+        MTS_ESP_MORPH
 )
 
 # Optionally add compiler warnings
