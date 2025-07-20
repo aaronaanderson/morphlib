@@ -73,6 +73,7 @@ void Synthesizer::prepareToPlay (double sr, int blockSize)
         jassert (v != nullptr);
         v->prepareToPlay (sr, blockSize);
     }
+    setCurrentPlaybackSampleRate (sr);
 }
 
 void Synthesizer::allocate (int maxBlockSize)
