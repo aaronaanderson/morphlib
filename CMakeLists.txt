@@ -12,10 +12,10 @@ add_library(morphlib STATIC)
 target_sources(morphlib
     PRIVATE
         src/Voice.cpp
-        src/Synthesiser.cpp
+        src/Synthesizer.cpp
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/morphlib/Voice.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/morphlib/Synthesiser.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/morphlib/Synthesizer.h>
 )
 
 
