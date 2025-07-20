@@ -1,12 +1,13 @@
 #pragma once
 
 #include <juce_audio_basics/juce_audio_basics.h>
-namespace morph {
 
 /*
-    This class wraps MPE logic common to all 
-    MPE synth plugins. 
+This class wraps MPE logic common to all 
+MPE synth plugins. 
 */
+struct MTSClient;
+namespace morph {
 class Synthesiser;
 class Voice : public juce::MPESynthesiserVoice 
 {
@@ -14,12 +15,13 @@ public:
     explicit Voice( Synthesiser& synthesiser );
     float getTimbre();
     float getPressure();
-    void setGlobalPitchWheel (float normalizedPitchWheel);
-    void setPitchWheel (float normalizedPitchWheel);
+    void setGlobalPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient = nullptr);
+    void setPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient = nullptr);  // provide a client for non-standard tunings!
+    void setPitchBendRange (float rangeSemitones);
 
-    virtual void prepareToPlay (double sr, int blockSize) {};
+    virtual void prepareToPlay (double sr, int blockSize) { juce::ignoreUnused (sr, blockSize); };
     virtual void resetAudio() {};
-    virtual void allocate (int maxBlockSize) {};
+    virtual void allocate (int maxBlockSize) { juce::ignoreUnused (maxBlockSize); };
 
     void setPitchWheelNormalized( float pitchWheelNormalized );
 
@@ -37,10 +39,13 @@ protected:
 
     float currentPitchWheel {0.0f};
 
-    float currentPitchWheelNormalized { 0.0f };
-    double globalPitchBendSemitones { 0.0f };
+    float currentPitchWheelNormalized {0.0f};
+    double globalPitchBendSemitones {0.0f};
+    double adjustedFrequency {0.0f};
 
-    juce::MPENote initialNote;
+    float pitchBendRange {2.0f};
+
+    double initialNote;
 
 private:
 
@@ -51,6 +56,9 @@ private:
     virtual void noteTimbreChanged() override;
     virtual void noteKeyStateChanged() override;
 
+    double getGlobalPitchBendSemitones (float normalizedPitchWhel, double bendRangeSemitones);
+    double getPitchBendToSemitones (float normalizedPitchWheel);
+    double semitonesToScalar (double semitones);
 };
 
 }

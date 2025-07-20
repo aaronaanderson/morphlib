@@ -1,4 +1,4 @@
-#include "morphlib/Synthesiser.h"
+#include "morphlib/Synthesizer.h"
 
 #include "morphlib/Voice.h"
 
@@ -60,7 +60,7 @@ void Synthesizer::panic()
     {
         auto* voice = dynamic_cast<Voice*> (getVoice (i));
         jassert (voice != nullptr);
-        voice->noteStopped(false);
+        voice->onNoteStop(false);
     }
 }
 

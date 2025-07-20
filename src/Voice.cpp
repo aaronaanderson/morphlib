@@ -14,25 +14,39 @@ float Voice::getPressure() { return pressure; }
 
 float Voice::getTimbre() { return timbre; }
 
-void Voice::setGlobalPitchWheel (float normalizedPitchWheel)
+void Voice::setGlobalPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient)
 {
     jassert (normalizedPitchWheel >= -1.0f && normalizedPitchWheel <= 1.0f);
     currentPitchWheel = normalizedPitchWheel;
-    auto tunedBaseFrequency = MTS_NoteToFrequency (&mtsClient, static_cast<char> (initialNote), -1);
-    auto semitones = getPitchBendToSemitones (pitchWheel);
-    auto adjustedFrequency = tunedBaseFrequency * semitonesToScalar (semitones + globalPitchBendSemitones);
-    trajectory.setFrequencySmooth (static_cast<float> (adjustedFrequency));    
+    globalPitchBendSemitones = getGlobalPitchBendSemitones (normalizedPitchWheel, pitchBendRange);
+    setPitchWheel (normalizedPitchWheel, mtsClient);
 }
 
-void Voice::setPitchWheelNormalized( float pitchWheelNormalized ) 
+void Voice::setPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient) 
 {
-    currentPitchWheelNormalized = pitchWheelNormalized;
+    jassert (normalizedPitchWheel >= -1.0f && normalizedPitchWheel <= 1.0f);
+    currentPitchWheel = normalizedPitchWheel;
+    
+    double tunedBaseFrequency {0.0f};
+    if (mtsClient != nullptr)
+    {
+        tunedBaseFrequency = MTS_NoteToFrequency (mtsClient, static_cast<char> (initialNote), -1);
+    } else {
+        tunedBaseFrequency = static_cast<double> (initialNote);
+    }
+    auto semitones = getPitchBendToSemitones (currentPitchWheel);
+    adjustedFrequency = tunedBaseFrequency * semitonesToScalar (semitones + globalPitchBendSemitones);
 
+}
+
+void Voice::setPitchBendRange (float rangeSemitones)
+{
+    pitchBendRange = rangeSemitones;
 }
 
 void Voice::noteStarted()
 {
-    initialNote = getCurrentlyPlayingNote();
+    initialNote = static_cast<double> (getCurrentlyPlayingNote().initialNote);
     onNoteStart();
 }
 
@@ -61,4 +75,19 @@ void Voice::noteTimbreChanged()
 void Voice::onNoteKeyStateChanged()
 {
     onNoteKeyStateChanged();
+}
+
+double Voice::getGlobalPitchBendSemitones (float normalizedPitchWheel, double bendRange)
+{
+    return juce::jmap ((double)normalizedPitchWheel, -1.0, 1.0, -bendRange, bendRange);
+}
+
+double Voice::getPitchBendToSemitones (float normalizedPitchWheel)
+{
+    return juce::jmap ((double)normalizedPitchWheel, -1.0, 1.0, -48.0, 48.0);
+}
+
+double Voice::semitonesToScalar (double semitones)
+{
+    return std::pow (2, semitones / 12.0);
 }
