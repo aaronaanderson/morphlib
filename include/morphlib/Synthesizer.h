@@ -14,19 +14,9 @@ public:
     
     virtual void prepareToPlay (double sr, int blockSize);
     virtual void allocate (int maxBlockSize);
-    
-    struct VoiceListener 
-    {
-        virtual ~VoiceListener() {}
-        virtual void voiceAdded (Voice* newVoice) = 0;
-        virtual void voiceRemoved (Voice* voiceRemoved) = 0;
-    };
-    void addVoiceListener (VoiceListener* vl);
-    void removeVoiceListener (VoiceListener* vl);
 
     void handleMidiEvent (const juce::MidiMessage& m) override;
 private:
-    juce::Array<VoiceListener*> voiceListeners;
     void setChannelPitchWheel (int channel, float normalizedPitchWheel);
 };
 

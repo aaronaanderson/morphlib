@@ -4,12 +4,6 @@
 
 using namespace morph;
 
-// Voice::Voice( Synthesiser& synth )
-//     : synthesiser( synth )
-// {
-
-// }
-
 float Voice::getPressure() { return pressure; }
 
 float Voice::getTimbre() { return timbre; }

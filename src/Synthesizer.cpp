@@ -29,6 +29,7 @@ float Synthesizer::getMaximumPressure()
     } 
     return max;
 }
+
 float Synthesizer::getAverageTimbre()
 {
     float sum = 0.0f;
@@ -60,7 +61,7 @@ void Synthesizer::panic()
     {
         auto* voice = dynamic_cast<Voice*> (getVoice (i));
         jassert (voice != nullptr);
-        voice->onNoteStop(false);
+        voice->panic();
     }
 }
 
@@ -80,26 +81,11 @@ void Synthesizer::allocate (int maxBlockSize)
 {
     for (int i = 0; i < getNumVoices(); i++)
     {
-        juce::MPESynthesiserVoice* mpev = getVoice (i);
-        Voice* v = dynamic_cast<Voice*> (mpev);
+        juce::MPESynthesiserVoice* juceVoice = getVoice (i);
+        Voice* v = dynamic_cast<Voice*> (juceVoice);
         jassert (v != nullptr);
         v->allocate (maxBlockSize);        
     }
-}
-
-
-void Synthesizer::addVoiceListener ( VoiceListener* v)
-{
-    jassert (v != nullptr);
-    voiceListeners.add (v);
-}
-
-void Synthesizer::removeVoiceListener (VoiceListener* v)
-{
-    jassert (v != nullptr);
-    jassert (voiceListeners.contains (v));
-
-    voiceListeners.remove (&v);
 }
 
 void Synthesizer::handleMidiEvent (const juce::MidiMessage& m)
