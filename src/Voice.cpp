@@ -21,13 +21,8 @@ void Voice::setPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient)
     jassert (normalizedPitchWheel >= -1.0f && normalizedPitchWheel <= 1.0f);
     currentPitchWheel = normalizedPitchWheel;
     
-    double tunedBaseFrequency {0.0f};
-    if (mtsClient != nullptr)
-    {
-        tunedBaseFrequency = MTS_NoteToFrequency (mtsClient, static_cast<char> (initialNote), -1);
-    } else {
-        tunedBaseFrequency = static_cast<double> (initialNote);
-    }
+    double tunedBaseFrequency = MTS_NoteToFrequency (mtsClient, static_cast<char> (initialNote), -1);
+
     auto semitones = getPitchBendToSemitones (currentPitchWheel);
     adjustedFrequency = tunedBaseFrequency * semitonesToScalar (semitones + globalPitchBendSemitones);
     onPitchWheelChanged();
