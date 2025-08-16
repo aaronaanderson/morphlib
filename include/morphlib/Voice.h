@@ -12,11 +12,12 @@ class Synthesiser;
 class Voice : public juce::MPESynthesiserVoice 
 {
 public:
+    Voice (MTSClient* mtsClient = nullptr);
     float getTimbre();
     float getPressure();
-    void setGlobalPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient = nullptr);
+    void setGlobalPitchWheel (float normalizedPitchWheel);
     void setPitchBendRange (float rangeSemitones);
-    void setPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient = nullptr);  // provide a client for non-standard tunings!
+    void setPitchWheel (float normalizedPitchWheel);  // provide a client for non-standard tunings!
 
     virtual void panic() {}
     virtual void prepareToPlay (double sr, int blockSize) { juce::ignoreUnused (sr, blockSize); }
@@ -25,6 +26,7 @@ public:
     virtual void setSampleRate (double sr) { juce::ignoreUnused (sr); }
 
     void setPitchWheelNormalized( float pitchWheelNormalized );
+    void setPitch (float pitch); // typically -24 to 24 semitones
     
     virtual void onAllocation (int maxBlockSize) = 0;
     virtual void onNoteStart() = 0;
@@ -34,6 +36,7 @@ public:
     virtual void onNoteTimbreChanged() = 0;
     virtual void onNoteKeyStateChanged() = 0;
     virtual void onPitchWheelChanged() {};
+    
 protected: 
     float pressure {0.0f};
     float timbre {0.0f};
@@ -44,6 +47,8 @@ protected:
     double adjustedFrequency {0.0f};
     float pitchBendRange {2.0f};
     double initialNote {0.0f};
+
+    MTSClient* mtsClient { nullptr };
 private:
     
     void noteStarted() override;
@@ -56,6 +61,9 @@ private:
     double getGlobalPitchBendSemitones (float normalizedPitchWhel, double bendRangeSemitones);
     double getPitchBendToSemitones (float normalizedPitchWheel);
     double semitonesToScalar (double semitones);
+    double getAdjustedFrequency ( MTSClient* mtsc = nullptr, float pitch = 0.0f);
+
+    const float ONE_TWELFTH {1.0f / 12.0f} ;
 };
 
 }

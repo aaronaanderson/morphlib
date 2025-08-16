@@ -4,19 +4,23 @@
 
 using namespace morph;
 
+Voice::Voice (MTSClient* mtsc) 
+    : mtsClient (mtsc)
+{}
+
 float Voice::getPressure() { return pressure; }
 
 float Voice::getTimbre() { return timbre; }
 
-void Voice::setGlobalPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient)
+void Voice::setGlobalPitchWheel (float normalizedPitchWheel)
 {
     jassert (normalizedPitchWheel >= -1.0f && normalizedPitchWheel <= 1.0f);
     currentPitchWheel = normalizedPitchWheel;
-    globalPitchBendSemitones = getGlobalPitchBendSemitones (normalizedPitchWheel, pitchBendRange);
-    setPitchWheel (normalizedPitchWheel, mtsClient);
+    globalPitchBendSemitones = getGlobalPitchBendSemitones (normalizedPitchWheel, pitchBendRange); // the pitch wheel, not the mpe pitch
+    setPitchWheel (normalizedPitchWheel);
 }
 
-void Voice::setPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient) 
+void Voice::setPitchWheel (float normalizedPitchWheel) 
 {
     jassert (normalizedPitchWheel >= -1.0f && normalizedPitchWheel <= 1.0f);
     currentPitchWheel = normalizedPitchWheel;
@@ -30,9 +34,10 @@ void Voice::setPitchWheel (float normalizedPitchWheel, MTSClient* mtsClient)
 
 void Voice::setPitchBendRange (float rangeSemitones) { pitchBendRange = rangeSemitones; }
 
-void Voice::noteStarted()
+void Voice::noteStarted ()
 {
     initialNote = static_cast<double> (getCurrentlyPlayingNote().initialNote);
+    adjustedFrequency = getAdjustedFrequency (mtsClient);
     onNoteStart();
 }
 
@@ -69,5 +74,16 @@ double Voice::getPitchBendToSemitones (float normalizedPitchWheel)
 
 double Voice::semitonesToScalar (double semitones)
 {
-    return std::pow (2, semitones / 12.0);
+    return std::pow (2.0f, semitones * ONE_TWELFTH);
+}
+
+double Voice::getAdjustedFrequency( MTSClient * mtsc, float pitch)
+{
+    double tunedBaseFrequency = MTS_NoteToFrequency (mtsc, static_cast<char> (initialNote), -1);
+
+    auto semitones = getPitchBendToSemitones (currentPitchWheel);
+    adjustedFrequency = tunedBaseFrequency * semitonesToScalar (semitones + globalPitchBendSemitones);
+    if (std::abs (pitch) > 0.0f) { adjustedFrequency *= semitonesToScalar (pitch); }
+
+    return adjustedFrequency;
 }
