@@ -63,10 +63,12 @@ add_library(morphlib STATIC)
 set(MORPHLIB_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Voice.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Synthesizer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoFitTextBox.cpp
 )
 set(MORPHLIB_HDR
     ${CMAKE_CURRENT_SOURCE_DIR}/include/morphlib/Voice.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/morphlib/Synthesizer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/morphlib/AutoFitTextBox.h
 )
 
 target_sources(morphlib
