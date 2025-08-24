@@ -3,40 +3,59 @@
 
 using namespace morph;
 
+void BandPassFilter::reset()
+{
+	lowPassFilterLeft.reset();
+	lowPassFilterRight.reset();
+	highPassFilterLeft.reset();
+	highPassFilterRight.reset();	
+}
+
+void BandPassFilter::noteOn() { reset(); }
+
 void BandPassFilter::prepare (double sr, int maxBlockSize) 
 { 
+	juce::ignoreUnused (maxBlockSize);
+
 	sampleRate = sr; 
-	lowFrequencySmoothed.reset (sampleRate, 20.0f);
-	highFrequencySmoothed.reset (sampleRate, 20.0f);
+	lowFrequencySmoothed.reset (sampleRate, 0.02f);
+	lowFrequencySmoothed.setCurrentAndTargetValue (lowFrequencySmoothed.getCurrentValue());
+	highFrequencySmoothed.reset (sampleRate, 0.02f);
+	highFrequencySmoothed.setCurrentAndTargetValue (highFrequencySmoothed.getCurrentValue());
 }
 
 void BandPassFilter::process (juce::AudioBuffer<float>& buffer)
 {
-	jassert (buffer.getNumChannels() == 2);
+	jassert (buffer.getNumChannels() > 0);
 	jassert (sampleRate > 0.0); // did you call prepare?
 
 	auto* l = buffer.getWritePointer (0);
-	auto* r = buffer.getWritePointer (1);
+	auto* r = buffer.getNumChannels() > 1 ? buffer.getWritePointer (1) : nullptr;
 
-	int totalSamples {buffer.getNumSamples()};
+	const int totalSamples {buffer.getNumSamples()};
 	int processed {0};
 	while (processed < totalSamples)
 	{
-		const int blockSize = juce::jmax (16, totalSamples - processed);
-		float lf = lowFrequencySmoothed.getNextValue();
-		float hf = highFrequencySmoothed.getNextValue();
-		lowPassFilterLeft.coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass (sampleRate, lf);
-		lowPassFilterRight.coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass (sampleRate, lf);
-		highPassFilterLeft.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass (sampleRate, hf);
-		highPassFilterRight.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass (sampleRate, hf);
+		const int blockSize = std::min (16, totalSamples - processed);
+		float lf = lowFrequencySmoothed.getCurrentValue();
+		float hf = highFrequencySmoothed.getCurrentValue();
+		lowPassFilterLeft.coefficients   = juce::dsp::IIR::Coefficients<float>::makeLowPass  (sampleRate, hf);
+		lowPassFilterRight.coefficients  = juce::dsp::IIR::Coefficients<float>::makeLowPass  (sampleRate, hf);
+		highPassFilterLeft.coefficients  = juce::dsp::IIR::Coefficients<float>::makeHighPass (sampleRate, lf);
+		highPassFilterRight.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass (sampleRate, lf);
 		lowFrequencySmoothed.skip (blockSize);
 		highFrequencySmoothed.skip (blockSize);
 
 		for (int i = 0; i < blockSize; i++)
 		{
-			l[i] = lowPassFilterLeft.processSample (highPassFilterLeft.processSample (l[i]));
-			r[i] = lowPassFilterRight.processSample (highPassFilterRight.processSample (r[i]));
+			int index = processed + i;
+			l[index] =     lowPassFilterLeft.processSample  (highPassFilterLeft.processSample (l[index]));
+			if( r != nullptr) {
+				r[index] = lowPassFilterRight.processSample (highPassFilterRight.processSample (r[index]));
+			}
 		}
+
+		processed += blockSize;
 	}
 }
 
